@@ -7,6 +7,7 @@ import (
 	"github.com/itshadis/api-forum/internal/configs"
 	"github.com/itshadis/api-forum/internal/handlers/memberships"
 	membershipRepo "github.com/itshadis/api-forum/internal/repositories/memberships"
+	membershipSvc "github.com/itshadis/api-forum/internal/services/memberships"
 	"github.com/itshadis/api-forum/pkg/internalsql"
 )
 
@@ -36,9 +37,11 @@ func main() {
 		log.Fatal("Gagal inisiasi database", err)
 	}
 
-	_ = membershipRepo.NewRepository(db)
+	membershipRepo := membershipRepo.NewRepository(db)
 
-	membershipHandler := memberships.NewHandler(r)
+	membershipService := membershipSvc.NewService(membershipRepo)
+
+	membershipHandler := memberships.NewHandler(r, membershipService)
 	membershipHandler.RegisterRoute()
 
 	r.Run(cfg.Service.Port)
