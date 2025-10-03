@@ -1,0 +1,1 @@
+ALTER TABLE posts RENAME COLUMN post_hastags TO post_hashtags;

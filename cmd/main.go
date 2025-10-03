@@ -6,8 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/itshadis/api-forum/internal/configs"
 	"github.com/itshadis/api-forum/internal/handlers/memberships"
+	"github.com/itshadis/api-forum/internal/handlers/posts"
 	membershipRepo "github.com/itshadis/api-forum/internal/repositories/memberships"
+	postRepo "github.com/itshadis/api-forum/internal/repositories/posts"
 	membershipSvc "github.com/itshadis/api-forum/internal/services/memberships"
+	postSvc "github.com/itshadis/api-forum/internal/services/posts"
 	"github.com/itshadis/api-forum/pkg/internalsql"
 )
 
@@ -37,12 +40,20 @@ func main() {
 		log.Fatal("Gagal inisiasi database", err)
 	}
 
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+
 	membershipRepo := membershipRepo.NewRepository(db)
+	postRepo := postRepo.NewRepository(db)
 
 	membershipService := membershipSvc.NewService(cfg, membershipRepo)
+	postService := postSvc.NewService(cfg, postRepo)
 
 	membershipHandler := memberships.NewHandler(r, membershipService)
 	membershipHandler.RegisterRoute()
+
+	postHandler := posts.NewHandler(r, postService)
+	postHandler.RegisterRoute()
 
 	r.Run(cfg.Service.Port)
 }
