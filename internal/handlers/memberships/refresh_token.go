@@ -7,10 +7,10 @@ import (
 	"github.com/itshadis/api-forum/internal/models/memberships"
 )
 
-func (h *Handler) Login(c *gin.Context) {
+func (h *Handler) Refresh(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var request memberships.LoginRequest
+	var request memberships.RefreshTokenRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -18,18 +18,16 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	accessToken, refreshToken, err := h.membershipSvc.Login(ctx, request)
+	userID := c.GetInt64("userID")
+	accessToken, err := h.membershipSvc.ValidateRefershToken(ctx, userID, request)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	response := memberships.LoginResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, memberships.RefreshTokenResponse{
+		AccessToken: accessToken,
+	})
 }
